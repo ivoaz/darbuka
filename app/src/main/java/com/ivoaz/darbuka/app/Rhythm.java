@@ -1,8 +1,8 @@
 package com.ivoaz.darbuka.app;
 
 public class Rhythm {
-    protected String name;
-    protected String string;
+    private String name;
+    private String string;
 
     public Rhythm(String name, String string) {
         this.name = name;

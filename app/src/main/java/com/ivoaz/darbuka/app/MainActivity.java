@@ -2,6 +2,8 @@ package com.ivoaz.darbuka.app;
 
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -9,32 +11,58 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 
-
 public class MainActivity extends ActionBarActivity {
 
-    protected Spinner rhythmSpinner;
-    protected Spinner bpmSpinner;
-    protected EditText rhythmInput;
-    protected Button playButton;
+    private final static int DEFAULT_RHYTHM = 0;
+    private final static int DEFAULT_BPM = 4;
 
-    protected Player player;
+    private Button playButton;
+    private EditText rhythmInput;
+    private Player player;
+
+    public interface OnRhythmChangeListener {
+
+        public void onRhythmChange(String rhythm);
+
+        public void onBpmChangeListener(Bpm bpm);
+
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        rhythmInput = (EditText)findViewById(R.id.rhythmInput);
+        player = new Player(this, new Darbuka(this));
 
-        player = new Player(this);
-
+        initRhythmInput();
         initRhythmSpinner();
         initBpmSpinner();
         initPlayButton();
     }
 
-    protected void initRhythmSpinner() {
-        rhythmSpinner = (Spinner)findViewById(R.id.rhythmSpinner);
+    private void initRhythmInput() {
+        rhythmInput = (EditText) findViewById(R.id.rhythmInput);
+        rhythmInput.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i2, int i3) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i2, int i3) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                player.onRhythmChange(editable.toString());
+            }
+        });
+    }
+
+    private void initRhythmSpinner() {
+        Spinner rhythmSpinner = (Spinner) findViewById(R.id.rhythmSpinner);
 
         ArrayAdapter spinnerArrayAdapter = new ArrayAdapter(this,
                 android.R.layout.simple_spinner_item, new Rhythm[] {
@@ -45,15 +73,16 @@ public class MainActivity extends ActionBarActivity {
                 new Rhythm("Bayou", "D--DD-T-"),
                 new Rhythm("Malfuf", "D--T--T-"),
                 new Rhythm("Saidi", "D-T---D-D---T---"),
-                new Rhythm("Super Saidi", "D-D-tkD-D-tkS-tk\n" +
-                                          "-kS-tkD-D-tkS-tk\n" +
-                                          "tkD-tkD-D-tkS-kS\n" +
-                                          "-kS-tkD-D-tkS-tk"),
                 new Rhythm("Maksoum", "D-T---T-D---T---"),
                 new Rhythm("Beledi", "D-D---T-D---T---"),
                 new Rhythm("Cifteteli", "D---K-T---K-T---D---D---T-------"),
-                new Rhythm("Masmoudi", "D---D---tktkT---D-tktkT-tktkT---"),
-                new Rhythm("Custom", "")
+                new Rhythm("Masmoudi", "D---D-------T---D-----T-----T---"),
+                new Rhythm("Masmoudi filled", "D---D---t-k-T-k-D---t-k-T---T-k-"),
+                new Rhythm("Masmoudi filled 2", "D---D---tktkT-tkD-tktkt-TktkT-tk"),
+                new Rhythm("Super Saidi", "D-D-tkD-D-tkS-tk\n" +
+                        "-kS-tkD-D-tkS-tk\n" +
+                        "tkD-tkD-D-tkS-kS\n" +
+                        "-kS-tkD-D-tkS-tk"),
         });
         spinnerArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 
@@ -61,8 +90,8 @@ public class MainActivity extends ActionBarActivity {
 
         rhythmSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                Rhythm rhythm = (Rhythm)rhythmSpinner.getSelectedItem();
+            public void onItemSelected(AdapterView<?> adapterView, View view, int position, long id) {
+                Rhythm rhythm = (Rhythm) adapterView.getItemAtPosition(position);
 
                 rhythmInput.setText(rhythm.getString());
             }
@@ -73,11 +102,11 @@ public class MainActivity extends ActionBarActivity {
             }
         });
 
-        rhythmSpinner.setSelection(0);
+        rhythmSpinner.setSelection(DEFAULT_RHYTHM);
     }
 
-    protected void initBpmSpinner() {
-        bpmSpinner = (Spinner)findViewById(R.id.bpmSpinner);
+    private void initBpmSpinner() {
+        Spinner bpmSpinner = (Spinner) findViewById(R.id.bpmSpinner);
 
         ArrayAdapter spinnerArrayAdapter = new ArrayAdapter(this,
                 android.R.layout.simple_spinner_item, new Bpm[] {
@@ -95,10 +124,21 @@ public class MainActivity extends ActionBarActivity {
         spinnerArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 
         bpmSpinner.setAdapter(spinnerArrayAdapter);
-        bpmSpinner.setSelection(3);
+        bpmSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int position, long id) {
+                player.onBpmChangeListener((Bpm)adapterView.getItemAtPosition(position));
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
+        bpmSpinner.setSelection(DEFAULT_BPM);
     }
 
-    protected void initPlayButton() {
+    private void initPlayButton() {
         playButton = (Button)findViewById(R.id.playButton);
 
         playButton.setOnClickListener(new View.OnClickListener() {
@@ -110,9 +150,7 @@ public class MainActivity extends ActionBarActivity {
                     playButton.setText(getString(R.string.play_button));
                 }
                 else {
-                    player.play(
-                            rhythmInput.getText().toString(),
-                            (Bpm)bpmSpinner.getSelectedItem());
+                    player.play();
 
                     playButton.setText(getString(R.string.play_button_stop));
                 }

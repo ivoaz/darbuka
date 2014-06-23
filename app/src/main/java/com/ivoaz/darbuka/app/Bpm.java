@@ -1,7 +1,7 @@
 package com.ivoaz.darbuka.app;
 
 public class Bpm {
-    protected int value;
+    private int value;
 
     public Bpm(int value) {
         this.value = value;

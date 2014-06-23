@@ -1,89 +1,99 @@
 package com.ivoaz.darbuka.app;
 
 import android.content.Context;
-import android.media.AudioManager;
-import android.media.SoundPool;
 
-import java.util.HashMap;
+import com.ivoaz.darbuka.app.MainActivity.OnRhythmChangeListener;
+
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-public class Player {
-    protected boolean playing = false;
-    protected int currentNote;
+public class Player implements OnRhythmChangeListener {
 
-    protected ScheduledExecutorService executor;
-    protected ScheduledFuture<?> future;
-    protected SoundPool soundPool;
+    private Context context;
 
-    protected HashMap<Character, Integer> sounds;
+    private ScheduledExecutorService executor;
+    private ScheduledFuture<?> future;
 
-    public Player(Context context) {
-        executor = Executors.newScheduledThreadPool(2);
+    private boolean playing = false;
+    private int position;
+    private double mod;
 
-        initSoundPool(context);
+    private Darbuka darbuka;
+    private char[] rhythm;
+    private int bpm;
+
+    public Player(Context context, Darbuka darbuka) {
+        this.context = context;
+        this.darbuka = darbuka;
+
+        executor = Executors.newSingleThreadScheduledExecutor();
     }
 
-    protected void initSoundPool(Context context) {
-        soundPool = new SoundPool(2, AudioManager.STREAM_MUSIC, 0);
-
-        sounds = new HashMap<Character, Integer>();
-
-        sounds.put('d', soundPool.load(context, R.raw.d, 1));
-        sounds.put('D', soundPool.load(context, R.raw.d_big, 1));
-        sounds.put('k', soundPool.load(context, R.raw.k, 1));
-        sounds.put('K', soundPool.load(context, R.raw.k_big, 1));
-        sounds.put('p', soundPool.load(context, R.raw.p, 1));
-        sounds.put('P', soundPool.load(context, R.raw.p_big, 1));
-        sounds.put('s', soundPool.load(context, R.raw.s, 1));
-        sounds.put('S', soundPool.load(context, R.raw.s_big, 1));
-        sounds.put('t', soundPool.load(context, R.raw.t, 1));
-        sounds.put('T', soundPool.load(context, R.raw.t_big, 1));
-    }
-
-    public void play(String rhythm, Bpm bpm) {
+    public void play() {
         if (playing) return;
 
         playing = true;
-        currentNote = 0;
+        darbuka.start();
+        position = 0;
 
-        final long noteLength = (60 * 1000) / bpm.getValue() / 2;
-        final Integer[] ids = parseRhythm(rhythm);
-
+        mod = 1000 * bpm * 2 / 60000;
         future = executor.scheduleAtFixedRate(new Runnable() {
             public void run() {
-                if (ids[currentNote] != null) {
-                    soundPool.play(ids[currentNote], 1, 1, 0, 0, 1);
-                }
-
-                if (++currentNote == ids.length) currentNote = 0;
+                playDarbuka();
             }
-        }, 0, noteLength, TimeUnit.MILLISECONDS);
+        }, 0, 1000, TimeUnit.MILLISECONDS);
     }
 
-    protected Integer[] parseRhythm(String rhythm) {
-        char[] chars = rhythm.replace("\n", "").toCharArray();
-        int length = chars.length;
-        Integer[] ids = new Integer[length];
+    private void playDarbuka() {
+        StringBuilder builder = new StringBuilder();
 
-        for (int i = 0; i < length; ++i) {
-            ids[i] = sounds.get(chars[i]);
+        double realLength = (double)1000 * bpm * 2 / 60000 + mod;
+        int length = (int)realLength;
+        mod = realLength - (double)length;
+
+        int n;
+        while (length > 0) {
+            if (position >= rhythm.length) {
+                position = 0;
+            }
+
+            n = rhythm.length - position;
+            if (length < n) {
+                n = length;
+            }
+
+            builder.append(rhythm, position, n);
+
+            length -= n;
+            position += n;
         }
 
-        return ids;
+        darbuka.play(builder.toString(), bpm);
     }
 
     public void stop() {
         if (!playing) return;
 
         playing = false;
-
+        darbuka.stop();
         future.cancel(false);
     }
 
     public boolean isPlaying() {
         return playing;
     }
+
+    @Override
+    public void onRhythmChange(String rhythm) {
+        this.rhythm = rhythm.replace("\n", "").toCharArray();
+
+    }
+
+    @Override
+    public void onBpmChangeListener(Bpm bpm) {
+        this.bpm = bpm.getValue();
+    }
+
 }
