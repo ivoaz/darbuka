@@ -79,6 +79,8 @@ public class MainActivity extends ActionBarActivity {
                 new Rhythm("Masmoudi", "D---D-------T---D-----T-----T---"),
                 new Rhythm("Masmoudi filled", "D---D---t-k-T-k-D---t-k-T---T-k-"),
                 new Rhythm("Masmoudi filled 2", "D---D---tktkT-tkD-tktkt-TktkT-tk"),
+                new Rhythm("Cifteteli filled", "D-tkt-t-TKD-T-TKD-tkD-D-T-------"),
+                new Rhythm("Muhajjar", "D-tkD-tkD-tkt-k-T-tkt-k-D-tkt-T-tktkT-k-T-tkt-k-T---T---"),
                 new Rhythm("Super Saidi", "D-D-tkD-D-tkS-tk\n" +
                         "-kS-tkD-D-tkS-tk\n" +
                         "tkD-tkD-D-tkS-kS\n" +

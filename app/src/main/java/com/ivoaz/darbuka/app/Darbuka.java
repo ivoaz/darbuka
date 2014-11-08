@@ -32,7 +32,7 @@ public class Darbuka {
     private void loadSounds() {
         try {
             sounds.put('d', new Wave(context.getResources().openRawResource(R.raw.d)));
-            sounds.put('D', new Wave(context.getResources().openRawResource(R.raw.d)));
+            sounds.put('D', new Wave(context.getResources().openRawResource(R.raw.d_big)));
             sounds.put('k', new Wave(context.getResources().openRawResource(R.raw.k)));
             sounds.put('K', new Wave(context.getResources().openRawResource(R.raw.k_big)));
             sounds.put('p', new Wave(context.getResources().openRawResource(R.raw.p)));

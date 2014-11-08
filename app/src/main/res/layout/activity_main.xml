@@ -8,30 +8,23 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.ivoaz.darbuka.app.MainActivity">
 
-    <LinearLayout
-        android:id="@+id/header"
+    <Spinner
+        android:id="@+id/rhythmSpinner"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content" />
 
-        <Spinner
-            android:id="@+id/rhythmSpinner"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="6" />
-
-        <Spinner
-            android:id="@+id/bpmSpinner"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="5" />
-    </LinearLayout>
+    <Spinner
+        android:id="@+id/bpmSpinner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/rhythmSpinner" />
 
     <EditText
         android:id="@+id/rhythmInput"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_below="@id/bpmSpinner"
         android:layout_above="@+id/playButton"
-        android:layout_below="@+id/header"
         android:gravity="top"
         android:hint="@string/rhythm_hint"
         android:typeface="monospace" />
